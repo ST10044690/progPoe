@@ -1,0 +1,134 @@
+﻿@model DashboardViewModel
+@using Agri_Energy_Connect.Models.Entities
+
+<div class="container">
+    <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Farmer Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-bag"></i> Your Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Production Date</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var product in Model.Products.OrderByDescending(p => p.ProductionDate).Take(5))
+                                {
+                                    <tr>
+                                        <td> @product.Name </td>
+                                        <td> @product.Category.Name </td>
+                                        <td> @product.ProductionDate.ToString("MM/dd/yyyy") </td>
+                                        <td> @product.Quantity @product.QuantityUnit </td>
+                                        <td> R @product.Price.ToString("F2") </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a asp-action="Products" class="btn btn-outline-success">View All Products</a>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <i class="bi bi-plus-circle"></i> Add New Product
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addProductModalLabel"><i class="bi bi-plus-circle"></i> Add New Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Farmer" asp-action="AddProduct" method="post">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Name" class="form-label">Product Name</label>
+                                <input type="text" class="form-control" id="Name" name="Name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="CategoryId" class="form-label">Category</label>
+                                <select class="form-select" id="CategoryId" name="CategoryId" required>
+                                    <option value="">Select a category</option>
+                                    @foreach (var category in ViewBag.Categories ?? new List<Category>())
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ProductionDate" class="form-label">Production Date</label>
+                                <input type="date" class="form-control" id="ProductionDate" name="ProductionDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Price" class="form-label">Price ()</label>
+                                <input type="number" min="0" class="form-control" id="Price" name="Price" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Quantity" class="form-label">Quantity</label>
+                                <input type="number" min="0" class="form-control" id="Quantity" name="Quantity" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="QuantityUnit" class="form-label">Unit</label>
+                                <select class="form-select" id="QuantityUnit" name="QuantityUnit" required>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="g">Gram (g)</option>
+                                    <option value="lb">Pound (lb)</option>
+                                    <option value="oz">Ounce (oz)</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="bundle">Bundle</option>
+                                    <option value="liter">Liter (L)</option>
+                                    <option value="gallon">Gallon</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Description" class="form-label">Description</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3" maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

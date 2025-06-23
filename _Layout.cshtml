@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebAppExample.styles.css" asp-append-version="true" />
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* Sidebar styles */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #343a40;
+            padding-top: 60px;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-hidden {
+            left: -250px;
+        }
+
+        .sidebar a, .sidebar form button {
+            padding: 12px 15px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #f8f9fa;
+            display: block;
+            transition: 0.3s;
+            background: none;
+            border: none;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+        }
+
+            .sidebar a:hover, .sidebar form button:hover {
+                background-color: #495057;
+            }
+
+            .sidebar a i, .sidebar form button i {
+                margin-right: 10px;
+            }
+
+        .sidebar-header {
+            padding: 10px 15px;
+            color: #f8f9fa;
+            font-weight: bold;
+            border-bottom: 1px solid #495057;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid #495057;
+            margin-top: auto;
+            padding-top: 10px;
+            padding-bottom: 20px;
+        }
+
+        .content-wrapper {
+            margin-left: 300px;
+            transition: 0.3s;
+        }
+
+        .content-expanded {
+            margin-left: 0;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            left: 260px;
+            top: 15px;
+            z-index: 1100;
+            transition: 0.3s;
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .toggle-btn-shifted {
+            left: 10px;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar
+
+        {
+            left: -250px;
+        }
+
+        .content-wrapper {
+            margin-left: 0;
+        }
+
+        .toggle-btn {
+            left: 10px;
+        }
+
+        }</style>
+</head>
+<body>
+    <!-- Sidebar -->
+    @{
+        // Get user role from session instead of using User.Identity
+        var userRole = Context.Session.GetString("UserRole");
+        var isAuthenticated = !string.IsNullOrEmpty(Context.Session.GetString("UserId"));
+        var userEmail = Context.Session.GetString("UserEmail");
+    }
+
+    @if (isAuthenticated)
+    {
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-nav">
+                @if (userRole == "farmer")
+                {
+                    <div class="sidebar-header">Farmer Navigation</div>
+                    <a href="@Url.Action("Dashboard", "Farmer")"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="@Url.Action("Products", "Farmer")"><i class="fas fa-seedling"></i> My Products</a>
+                    <!-- Add more links as needed -->
+                }
+                else if (userRole == "employee")
+                {
+                    <div class="sidebar-header">Employee Navigation</div>
+                    <a href="@Url.Action("DashboardE", "Employee")"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="@Url.Action("FarmerDatabase", "Employee")"><i class="fas fa-users"></i> Farmers</a>
+                    <a href="@Url.Action("ProductList", "Employee")"><i class="fas fa-list"></i> All Products</a>
+                    <!-- Add more links as needed -->
+                }
+            </div>
+
+            <div class="sidebar-footer">
+                <form asp-controller="User" asp-action="Logout" method="post">
+                    <button type="submit" class="text-light">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toggle Button - Only show when authenticated -->
+        <button id="sidebarToggle" class="btn toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    }
+
+    <!-- Content Wrapper -->
+    <div id="content" class="@(isAuthenticated ? "content-wrapper" : "")">
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const toggleBtn = document.getElementById('sidebarToggle');
+
+            // Check if elements exist (for non-authenticated users)
+            if (sidebar && content && toggleBtn) {
+                // Check localStorage for sidebar state
+                const sidebarState = localStorage.getItem('sidebarState');
+
+                if (sidebarState === 'hidden' || window.innerWidth <= 768) {
+                    sidebar.classList.add('sidebar-hidden');
+                    content.classList.add('content-expanded');
+                    toggleBtn.classList.add('toggle-btn-shifted');
+                }
+
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('sidebar-hidden');
+                    content.classList.toggle('content-expanded');
+                    toggleBtn.classList.toggle('toggle-btn-shifted');
+
+                    // Save state to localStorage
+                    if (sidebar.classList.contains('sidebar-hidden')) {
+                        localStorage.setItem('sidebarState', 'hidden');
+                    } else {
+                        localStorage.setItem('sidebarState', 'visible');
+                    }
+                });
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

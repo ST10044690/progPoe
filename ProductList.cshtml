@@ -1,0 +1,259 @@
+﻿@{
+    ViewData["Title"] = ViewBag.FarmerName != null ? $"{ViewBag.FarmerName}'s Products" : "All Products";
+}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-box-seam"></i>
+            @if (ViewBag.FarmerName != null)
+            {
+                <span>@ViewBag.FarmerName's Products</span>
+            }
+            else
+            {
+                <span>All Products</span>
+            }
+        </h1>
+        @if (ViewBag.FarmerName != null)
+        {
+            <a href="@Url.Action("FarmerDatabase", "Employee")" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Farmers
+            </a>
+        }
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false">
+                    <i class="bi bi-funnel"></i> Filter Products
+                </button>
+            </h5>
+        </div>
+        <div class="collapse" id="filterCollapse">
+            <div class="card-body">
+                <form method="get" action="@Url.Action("ProductList", "Employee")" id="filterForm">
+                    @if (ViewBag.FarmerId != null)
+                    {
+                        <input type="hidden" name="farmerId" value="@ViewBag.FarmerId" />
+                    }
+
+                    <div class="row g-3">
+                        <!-- Search -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="searchTerm" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="searchTerm" name="searchTerm"
+                                       placeholder="Search by name or description" value="@ViewBag.CurrentSearchTerm">
+                            </div>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="categoryId" class="form-label">Category</label>
+                                <select class="form-select" id="categoryId" name="categoryId">
+                                    <option value="">All Categories</option>
+                                    @foreach (var category in ViewBag.Categories)
+                                    {
+                                        <option value="@category.Id" selected="@(ViewBag.CurrentCategoryId == category.Id)">
+                                            @category.Name
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Price Range</label>
+                                <div class="row">
+                                    <div class="col">
+                                        <input type="number" step="0.01" min="0" class="form-control"
+                                               id="minPrice" name="minPrice" placeholder="Min R"
+                                               value="@ViewBag.CurrentMinPrice">
+                                    </div>
+                                    <div class="col-auto pt-2">to</div>
+                                    <div class="col">
+                                        <input type="number" step="0.01" min="0" class="form-control"
+                                               id="maxPrice" name="maxPrice" placeholder="Max R"
+                                               value="@ViewBag.CurrentMaxPrice">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Production Date Range</label>
+                                <div class="row">
+                                    <div class="col">
+                                        <input type="date" class="form-control" id="startDate"
+                                               name="startDate" value="@ViewBag.CurrentStartDate">
+                                    </div>
+                                    <div class="col-auto pt-2">to</div>
+                                    <div class="col">
+                                        <input type="date" class="form-control" id="endDate"
+                                               name="endDate" value="@ViewBag.CurrentEndDate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                        <a href="@Url.Action("ProductList", "Employee", new { farmerId = ViewBag.FarmerId })"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Production Date</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>@product.Name</td>
+                                <td>@product.Category.Name</td>
+                                <td>@product.ProductionDate.ToString("MM/dd/yyyy")</td>
+                                <td>@product.Quantity @product.QuantityUnit</td>
+                                <td>R @product.Price.ToString("F2")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" type="button" data-bs-toggle="modal" data-bs-target="#productDetailsModal_@product.Id">
+                                        <i class="bi bi-info-circle"></i> Details
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (Model.Count == 0)
+                {
+                    <div class="text-center p-3">
+                        @if (ViewBag.FarmerName != null)
+                        {
+                            <p class="text-muted">No products match your filter criteria for this farmer.</p>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No products match your filter criteria.</p>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Details Modal -->
+@foreach (var product in Model)
+{
+    <div class="modal fade" id="productDetailsModal_@product.Id" tabindex="-1" aria-labelledby="productDetailsModalLabel_@product.Id" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="productDetailsModalLabel_@product.Id">
+                        <i class="bi bi-box-seam"></i> @product.Name Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Product Information</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Name:</dt>
+                                <dd class="col-sm-8">@product.Name</dd>
+
+                                <dt class="col-sm-4">Category:</dt>
+                                <dd class="col-sm-8">@product.Category.Name</dd>
+
+                                <dt class="col-sm-4">Production Date:</dt>
+                                <dd class="col-sm-8">@product.ProductionDate.ToString("MM/dd/yyyy")</dd>
+
+                                <dt class="col-sm-4">Quantity:</dt>
+                                <dd class="col-sm-8">@product.Quantity @product.QuantityUnit</dd>
+
+                                <dt class="col-sm-4">Price:</dt>
+                                <dd class="col-sm-8">R @product.Price.ToString("F2") per unit</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Farm Information</h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Farm Name:</dt>
+                                <dd class="col-sm-8">@product.Farmer.FarmName</dd>
+
+                                <dt class="col-sm-4">Address:</dt>
+                                <dd class="col-sm-8">@product.Farmer.Address</dd>
+
+                                <dt class="col-sm-4">Contact:</dt>
+                                <dd class="col-sm-8">@product.Farmer.PhoneNumber</dd>
+
+                                <dt class="col-sm-4">Email:</dt>
+                                <dd class="col-sm-8">@product.Farmer.Email</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="fw-bold">Description</h6>
+                            <p>@(string.IsNullOrEmpty(product.Description) ? "No description available" : product.Description)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<script>
+    // Auto-expand filter panel if any filters are applied
+    document.addEventListener('DOMContentLoaded', function() {
+        const hasFilters = '@(ViewBag.CurrentCategoryId != null ||
+                                                            ViewBag.CurrentMinPrice != null ||
+                                                            ViewBag.CurrentMaxPrice != null ||
+                                                            ViewBag.CurrentStartDate != null ||
+                                                            ViewBag.CurrentEndDate != null ||
+                                                            !string.IsNullOrEmpty(ViewBag.CurrentSearchTerm))' === 'True';
+
+        if (hasFilters) {
+            const filterCollapse = document.getElementById('filterCollapse');
+            if (filterCollapse) {
+                new bootstrap.Collapse(filterCollapse, {
+                    toggle: true
+                });
+            }
+        }
+    });
+</script>

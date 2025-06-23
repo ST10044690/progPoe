@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Farmers List";
+}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-people"></i> Farmers List</h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow">
+        <div class="card-body">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFarmerModal">
+                <i class="bi bi-person-plus"></i> Add New Farmer
+            </button>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Farm Name</th>
+                            <th>Contact Info</th>
+                            <th>Join Date</th>
+                            <th>Products</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var farmer in Model)
+                        {
+                            <tr>
+                                <td>@farmer.FarmName</td>
+                                <td>
+                                    <div><i class="bi bi-envelope"></i> @farmer.Email</div>
+                                    <div><i class="bi bi-telephone"></i> @farmer.PhoneNumber</div>
+                                </td>
+                                <td>@farmer.JoinDate.ToString("MM/dd/yyyy")</td>
+                                <td>
+                                    <a href="@Url.Action("ProductList", "Employee", new { farmerId = farmer.Id })" class="btn btn-sm btn-primary ms-2">
+                                        <i class="bi bi-eye"></i> View Products
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (Model.Count == 0)
+                {
+                    <div class="text-center p-3">
+                        <p class="text-muted">No farmers registered yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Farmer Modal -->
+<div class="modal fade" id="addFarmerModal" tabindex="-1" aria-labelledby="addFarmerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addFarmerModalLabel"><i class="bi bi-person-plus"></i> Add New Farmer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Employee" asp-action="AddFarmer" method="post">
+                <div class="modal-body">
+                    <h5 class="mb-3">User Account Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="UserDetails_Name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="UserDetails_Name" name="UserDetails.Name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="UserDetails_LastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="UserDetails_LastName" name="UserDetails.LastName" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="UserDetails_Email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="UserDetails_Email" name="UserDetails.Email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="UserDetails_Password" class="form-label">Default Password</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="UserDetails_Password" name="UserDetails.Password" value="Farmer123" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="generatePassword">Generate</button>
+                                </div>
+                                <small class="text-muted">The farmer will use this password to log in</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3">Farm Details</h5>
+
+                    <div class="form-group mb-3">
+                        <label for="FarmName" class="form-label">Farm Name</label>
+                        <input type="text" class="form-control" id="FarmName" name="FarmName" maxlength="100" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="Address" name="Address" maxlength="200" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="PhoneNumber" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="PhoneNumber" name="PhoneNumber">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Description" class="form-label">Description</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3" maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Register Farmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('generatePassword').addEventListener('click', function() {
+        const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%^&*";
+        let password = "F";
+        for (let i = 0; i < 9; i++) {
+            const randomIndex = Math.floor(Math.random() * chars.length);
+            password += chars[randomIndex];
+        }
+        document.getElementById('UserDetails_Password').value = password;
+    });
+
+</script>

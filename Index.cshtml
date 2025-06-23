@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="text-center">
+        <h1 class="display-4 text-success">Welcome to Agri-Energy Connect</h1>
+        <p class="lead">Connecting farmers and energy producers for a sustainable future.</p>
+
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-fill text-success" style="font-size: 3rem;"></i>
+                        <h3>Farmers</h3>
+                        <p>Manage your farm profile and list your products to reach more customers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cart-fill text-success" style="font-size: 3rem;"></i>
+                        <h3>Products</h3>
+                        <p>Add and manage your agricultural products on our platform.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
+                        <h3>Analytics</h3>
+                        <p>Track your farm's performance and product trends over time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="User" asp-action="Login" class="btn btn-lg btn-success">Login to Get Started</a>
+            }
+            else
+            {
+                @if (User.IsInRole("Farmer"))
+                {
+                    <a asp-controller="Farmer" asp-action="Dashboard" class="btn btn-lg btn-success">Go to Farmer Dashboard</a>
+                }
+                else if (User.IsInRole("Employee"))
+                {
+                    <a asp-controller="Employee" asp-action="Dashboard" class="btn btn-lg btn-success">Go to Employee Dashboard</a>
+                }
+            }
+            <a asp-controller="User" asp-action="SignUp" class="btn btn-lg btn-outline-success">Create an Account</a>
+        </div>
+    </div>
+</body>
+</html>
+
